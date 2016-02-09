@@ -1,4 +1,7 @@
 # Image Search Abstraction Layer
+
+:whale:
+
 http://www.freecodecamp.com/challenges/image-search-abstraction-layer
 
 I used the [Imgur API](http://api.imgur.com/).
