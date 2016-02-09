@@ -1,34 +1,37 @@
 {
-  "name": "MicroserviceBase",
+  "name": "ImageSearchAbstractionLayer",
   "version": "1.0.0",
-  "description": "Free Code Camp Microservice Base",
+  "description": "Free Code Camp Challenge: Image Search Abstraction Layer",
   "private": true,
-  "scripts": {
-    "start": "node ./bin/www",
-    "test": "test"
-  },
   "keywords": [
     "fcc",
-    "basejump",
     "microservice"
   ],
   "author": "Justin Watson",
   "license": "ISC",
   "dependencies": {
     "async": "^1.5.1",
-    "debug": "2.2.0",
+    "bluebird": "^3.2.2",
+    "debug": "^2.2.0",
     "express": "^4.13.3",
     "marked": "0.3.5",
     "morgan": "^1.6.1",
-    "rsvp": "3.1.0",
-    "serve-favicon": "2.3.0",
+    "oauth": "^0.9.14",
+    "serve-favicon": "2.3.0"
   },
   "devDependencies": {
-    "mocha": "^2.3.4",
-    "should": "8.0.2"
+    "babel-cli": "^6.5.1",
+    "babel-preset-es2015": "^6.5.0",
+    "jest": "^0.1.40",
+    "node-sass": "^3.4.2",
+    "standard": "^6.0.4"
   },
   "engines": {
-    "node": "4.2.3",
-    "npm": "^2.14.7"
+    "node": "^5.4.1",
+    "npm": "^3.3.12"
+  },
+  "scripts": {
+    "start": "node ./bin/www",
+    "test": "standard && jest"
   }
 }
