@@ -1,3 +1,4 @@
+import 'babel-polyfill'
 import express from 'express'
 import logger from 'morgan'
 import Promise from 'bluebird'
@@ -5,9 +6,11 @@ import fs from 'fs'
 import path from 'path'
 import marked from 'marked'
 import fetch from 'whatwg-fetch'
+import emojione from 'emojione'
+
 import imgur from './imgur'
 
-var debug = require('debug')('Tally:app');
+var debug = require('debug')('app:root');
 var router = express.Router()
 
 var app = express()
@@ -27,60 +30,67 @@ router.get('/api', (req, res) => {
   })
 })
 
-router.get('/api/imagesearch/:search', (req, res, next) => {
+router.get('/api/imagesearch/:search', async (req, res) => {
 
-  var promise = new Promise((resolve, reject) => {
-    if (!('search' in req.params)) {
-      res.status(200).send('NOT OK')
+  if (!('search' in req.params)) {
+    res.status(200).send('NOT OK')
+  }
+
+  if (req.params.search === '') {
+    res.status(200).send('NOT OK')
+  }
+
+  let searchQuery = req.params.search
+
+  debug('search query = ' + searchQuery)
+
+  let offset = 0
+
+  if ('query' in req) {
+    if ('offset' in req.query) {
+      offset = req.query.offset
     }
+  }
 
-    if (req.params.search === '') {
-      res.status(200).send('NOT OK')
+  debug('offset  = ' + offset)
+
+  // Store the search query.
+  _searches.push({ term: searchQuery, when: Date.now() })
+
+  let results = await imgur.fetchImgur(searchQuery, offset)
+
+  res.status(200).json({
+    apiVersion: "1.0",
+    data: {
+      count: results.length,
+      results: results
     }
-
-    let searchQuery = req.params.search
-
-    debug('search query = ' + searchQuery)
-
-    if ('query' in req) {
-      if (typeof req.query.offset !== 'undefined') {
-        let offset = req.query.offset
-        debug('offset = ' + offset)
-      }
-    }
-
-    // Store the search.
-    _searches.push({term: searchQuery, when: Date.now()})
-
-    imgur.fetchImgur(searchQuery, 0)
-
-    res.status(200).send('OK')
   })
-  return promise
 })
 
 router.get('/api/latest/imagesearch', (req, res) => {
   res.status(200).json({
     apiVersion: "1.0",
     data: {
-      searches: _searches
+      recentSearches: _searches
     }
   })
 })
 
-router.get("/", (req, res, next) => {
+router.get("/", (req, res) => {
   // Render the README file.
-  var p = new Promise(function(res, rej){
-    fs.readFile("README.md", "utf8", function(err, data) {
-      if (err) throw err
+  return new Promise(function (res, rej) {
+    fs.readFile("README.md", "utf8", function (err, data) {
+      if (err) rej(err)
       res(data)
     })
-  }).then(function(val) {
+  }).then(function (val) {
     let readme = marked(val.toString());
-    let html = `<html><head><link rel="stylesheet" href="index.css"/></head><body>${readme}</body></html>`;
+    // Add emojis.
+    readme = emojione.shortnameToImage(readme)
+    let html = `<html><head><link rel="stylesheet" href="public/index.css"/></head><body>${readme}</body></html>`;
     res.status(200).send(html);
   })
-  return p
 })
 
 app.use(router)
@@ -92,23 +102,23 @@ app.use(router)
 // Development Error Handler
 // will print stacktrace
 if (app.get('env') === 'development') {
-    app.use((err, req, res, next) => {
-        res.status(err.status || 500)
-        res.render('error', {
-            message: err.message,
-            error: err
-        })
+  app.use((err, req, res) => {
+    res.status(err.status || 500)
+    res.render('error', {
+      message: err.message,
+      error: err
     })
+  })
 }
 
 // Production Error Handler
 // no stacktraces leaked to user
-app.use((err, req, res, next) => {
-    res.status(err.status || 500)
-    res.render('error', {
-        message: err.message,
-        error: {}
-    })
+app.use((err, req, res) => {
+  res.status(err.status || 500)
+  res.render('error', {
+    message: err.message,
+    error: {}
+  })
 })
 
 module.exports = app;
