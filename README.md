@@ -2,6 +2,8 @@
 
 :whale:
 
+[![js-standard-style](https://cdn.rawgit.com/feross/standard/master/badge.svg)](https://github.com/feross/standard)
+
 http://www.freecodecamp.com/challenges/image-search-abstraction-layer
 
 I used the [Imgur API](http://api.imgur.com/).

@@ -5,6 +5,7 @@ import fs from 'fs'
 import path from 'path'
 import marked from 'marked'
 import fetch from 'whatwg-fetch'
+import imgur from './imgur'
 
 var debug = require('debug')('Tally:app');
 var router = express.Router()
@@ -30,37 +31,39 @@ router.get('/api/imagesearch/:search', (req, res, next) => {
 
   var promise = new Promise((resolve, reject) => {
     if (!('search' in req.params)) {
-      res.status(200).send('NOT OK');
+      res.status(200).send('NOT OK')
     }
 
     if (req.params.search === '') {
-      res.status(200).send('NOT OK');
+      res.status(200).send('NOT OK')
     }
 
-    let searchQuery = req.params.search;
+    let searchQuery = req.params.search
 
-    debug('search query = ' + searchQuery);
+    debug('search query = ' + searchQuery)
 
     if ('query' in req) {
       if (typeof req.query.offset !== 'undefined') {
-        let offset = req.query.offset;
-        debug('offset = ' + offset);
+        let offset = req.query.offset
+        debug('offset = ' + offset)
       }
     }
 
     // Store the search.
-    _searches.push({term: searchQuery, when: Date.now()});
+    _searches.push({term: searchQuery, when: Date.now()})
 
-    res.status(200).send('OK');
-  });
-  return promise;
-});
+    imgur.fetchImgur(searchQuery, 0)
+
+    res.status(200).send('OK')
+  })
+  return promise
+})
 
 router.get('/api/latest/imagesearch', (req, res) => {
   res.status(200).json({
     apiVersion: "1.0",
     data: {
-      _searches
+      searches: _searches
     }
   })
 })
